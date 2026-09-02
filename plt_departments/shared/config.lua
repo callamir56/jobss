@@ -1101,6 +1101,64 @@ Config.Translations = {
         ["vehicle_unlocked"] = "Vehicle unlocked!",
         ["cancelled"] = "Cancelled!",
         ["seize_vehicle"] = "Seize Vehicle",
+
+        -- Department management / finances
+        ["no_permission_manage_dept"] = "Only the gamemaster group can manage departments!",
+        ["not_in_dept"] = "You are not in any department!",
+        ["config_saved"] = "Configuration saved successfully!",
+        ["member_not_found"] = "Member not found!",
+        ["deposited_balance"] = "Deposited ${amount} into the department balance.",
+        ["withdrew_balance"] = "Withdrew ${amount} from the department balance.",
+        ["dept_no_funds"] = "The department does not have enough funds!",
+        ["not_enough_cash"] = "You don't have enough cash on you!",
+        ["salary_updated"] = "Salary updated successfully!",
+        ["failed_update_salary"] = "Failed to update salary!",
+        ["salary_distributed"] = "Paid ${amount} in salaries to {count} employee(s).",
+        ["received_salary"] = "You received a ${amount} salary from the {dept} department.",
+
+        -- Radars / GPS / K9
+        ["caught_speeding"] = "You were caught speeding! Fine: ${amount}",
+        ["radar_setup_msg"] = "Radar '{name}' activated with a limit of {limit}.",
+        ["deactivate_radar"] = "Deactivate Radar",
+        ["gps_placed"] = "GPS tracker placed on vehicle {plate}.",
+        ["gps_removed"] = "GPS tracker removed from vehicle {plate}.",
+        ["spawn_k9"] = "Spawn K9",
+        ["remove_k9"] = "Remove K9",
+        ["not_allowed_weapon"] = "You are not allowed to take this weapon!",
+
+        -- Citations
+        ["citation_issued"] = "Officer {name} has issued you a citation.",
+        ["citation_sent"] = "Citation sent to {name}.",
+        ["citation_signed_paid"] = "You signed and paid the ${amount} citation.",
+        ["citation_signed_target"] = "{name} signed and paid the citation.",
+        ["citation_declined"] = "You declined the ${amount} citation. It will be collected automatically.",
+        ["citation_declined_officer"] = "{name} declined the citation.",
+        ["insufficient_funds_citation"] = "You don't have enough money to pay this citation!",
+
+        -- Plate checks
+        ["plate"] = "Plate",
+        ["owner"] = "Owner",
+        ["alert"] = "Alert",
+        ["status"] = "Status",
+        ["valid"] = "VALID",
+        ["unknown_no_reg"] = "UNKNOWN / NOT REGISTERED",
+        ["not_in_database"] = "NOT IN DATABASE",
+
+        -- Interactions / placement / uniform
+        ["search_person"] = "Search Person",
+        ["could_not_find_player"] = "Could not find player with ID #{id}!",
+        ["put_on_uniform"] = "Put On Uniform",
+        ["take_off_uniform"] = "Take Off Uniform",
+        ["door_selection_header"] = "Select Door",
+        ["select_door"] = "Select",
+        ["object_placement_header"] = "Object Placement",
+        ["placement_header"] = "Placement",
+        ["place_object"] = "Place",
+        ["rotate_object"] = "Rotate",
+        ["rotate_placement"] = "Rotate",
+        ["confirm_placement"] = "Confirm",
+        ["ped"] = "Ped",
+        ["no_door_selected"] = "No location selected",
     }
 }
 

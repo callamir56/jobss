@@ -1,8 +1,6 @@
 // Windows 98 Forensic Ballistics Analyzer Logic
-console.log("Forensic Evidence Script Loaded");
 
 window.openForensicPC = function() {
-    console.log("NUI: Opening Forensic PC");
     const container = document.getElementById('forensic-pc-container');
     if (container) {
         container.style.setProperty('display', 'flex', 'important');
@@ -24,7 +22,6 @@ window.closeForensicPC = function() {
 };
 
 window.showPCSelection = function() {
-    console.log("NUI: Showing PC Selection Screen");
     const selectionScreen = document.getElementById('pc-selection-screen');
     const analysisScreen = document.getElementById('pc-analysis-screen');
     
@@ -64,7 +61,6 @@ window.showPCSelection = function() {
 };
 
 window.startAnalysisFromSelection = function(evidence) {
-    console.log("NUI: Starting analysis for sample", evidence);
     const selectionScreen = document.getElementById('pc-selection-screen');
     const analysisScreen = document.getElementById('pc-analysis-screen');
     

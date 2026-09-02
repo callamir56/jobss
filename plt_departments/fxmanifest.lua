@@ -96,6 +96,9 @@ escrow_ignore {
     'shared/**',
 }
 
+-- Note: the original 'dependency "/assetpacks"' (escrow leftover) was removed.
+-- Required resources: es_extended, oxmysql, ox_lib, ox_target, ox_inventory
+
 exports {
     'AddBolo',
     'UpdateBolo',
@@ -118,6 +121,4 @@ exports {
     'SeizeVehicle',
     'RequestSeizeVehicle'
 }
-
-dependency '/assetpacks'
 

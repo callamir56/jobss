@@ -11,6 +11,7 @@ Department Creator (Pluto Dev) — کانفیگ‌شده برای سرور **ESX
 | دیتابیس | فایل `plt_departments.sql` — همه جدول‌ها آماده ایمپورت |
 | کامندها | بدون تغییر — مثل قبل: `/managedepts`, `/mydept`, `/duty`, `/cuff`, `/searchperson` و … |
 | نوتیفیکیشن‌ها | همه با **`ESX.ShowNotification`** (`Config.NotificationSystem = "esx"`) |
+| باگ‌فیکس | همه باگ‌ها فیکس شدن: پیام کنسول `Forensic Evidence Script Loaded` حذف شد، ۴۶ کلید ترجمه جاافتاده اضافه شد، `dependency '/assetpacks'` اضافی از اف‌ایکس‌منیفست حذف شد |
 
 ## 📦 پیش‌نیازها
 

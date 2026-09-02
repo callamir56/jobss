@@ -221,7 +221,7 @@ RegisterNetEvent("plt_departments:client:syncRadars", function(radars)
             exports.ox_target:addLocalEntity(obj, {
                 {
                     name        = "remove_radar_" .. radarId,
-                    label       = T("Deactivate Radar"),
+                    label       = T("deactivate_radar"),
                     icon        = "fas fa-trash",
                     distance    = 2.0,
                     canInteract = canInteract,
