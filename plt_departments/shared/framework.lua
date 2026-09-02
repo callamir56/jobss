@@ -292,7 +292,8 @@ if IsDuplicityVersion() then
             local p = Framework.Core.GetPlayerFromId(src)
             if not p then return false end
             local group = p.getGroup()
-            if group == perm or group == 'admin' or group == 'superadmin' or group == 'gamemaster' then
+            -- Management access: only gamemaster (or the exact requested group)
+            if group == perm or group == 'gamemaster' then
                 return true
             end
             if Config.ESXAdminGroups then

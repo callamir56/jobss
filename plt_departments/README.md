@@ -7,7 +7,8 @@ Department Creator (Pluto Dev) — کانفیگ‌شده برای سرور **ESX
 | مورد | وضعیت |
 |---|---|
 | فریم‌ورک | `Config.Framework = "esx"` (فقط ESX) |
-| دسترسی مدیریت | گروپ **`gamemaster`** (و `admin` / `superadmin`) با `setgroup <id> gamemaster` |
+| دسترسی مدیریت | **فقط گروپ `gamemaster`** با `setgroup <id> gamemaster` |
+| دیتابیس | فایل `plt_departments.sql` — همه جدول‌ها آماده ایمپورت |
 | کامندها | بدون تغییر — مثل قبل: `/managedepts`, `/mydept`, `/duty`, `/cuff`, `/searchperson` و … |
 | نوتیفیکیشن‌ها | همه با **`ESX.ShowNotification`** (`Config.NotificationSystem = "esx"`) |
 
@@ -22,7 +23,10 @@ Department Creator (Pluto Dev) — کانفیگ‌شده برای سرور **ESX
 ## 🚀 نصب
 
 1. پوشه `plt_departments` را در `resources` سرور کپی کنید.
-2. در `server.cfg`:
+2. فایل **`plt_departments.sql`** را داخل دیتابیس ایمپورت کنید (HeidiSQL یا phpMyAdmin).
+   شامل ۱۴ جدول: دیتا، اعضا، وارنت، BOLO، پرونده‌ها، لاگ دیوتی، تراکنش‌ها، خودروهای ضبط‌شده، رادارها، دوربین‌ها، ردیاب‌ها، ارتباطات + جدول‌های سینک MDT.
+   (اسکریپت جدول‌ها را موقع استارت هم خودش می‌سازد، پس ایمپورت اختیاری ولی پیشنهادی است.)
+3. در `server.cfg`:
 
 ```cfg
 ensure es_extended
@@ -35,27 +39,20 @@ ensure plt_departments
 
 ## 🔐 دسترسی (Permission)
 
-برای دادن دسترسی مدیریت دپارتمان‌ها به یک پلیر، گروپ او را `gamemaster` کنید:
+**فقط گروپ `gamemaster` به منوی مدیریت دسترسی دارد** — هیچ گروپ دیگری (حتی admin) دسترسی ندارد.
 
-```
-/managedepts   → فقط برای گروپ‌های داخل سرور (کنسول) یا از طریق ادمین
-add_principal identifier.license:xxxx group.gamemaster   (روش ACE)
-```
-
-یا به‌صورت مستقیم در بازی با دستور ای‌اس‌ایکس:
+در بازی با دستور:
 
 ```
 /setgroup <id> gamemaster
 ```
 
 بعد از ست شدن گروپ، پلیر می‌تواند با `/managedepts` منوی ساخت و مدیریت دپارتمان را باز کند.
-گروپ‌های مجاز در `shared/config.lua` قابل ویرایش هستند:
+لیست گروپ‌های مجاز در `shared/config.lua`:
 
 ```lua
 Config.ESXAdminGroups = {
     "gamemaster",
-    "admin",
-    "superadmin",
 }
 ```
 

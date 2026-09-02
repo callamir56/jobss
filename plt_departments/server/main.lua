@@ -101,18 +101,17 @@ end
 
 function IsPlayerAuthorized(playerId)
     
-    -- ESX group check: setgroup <id> gamemaster (or admin/superadmin)
+    -- ESX group check: ONLY gamemaster has management access (setgroup <id> gamemaster)
     if Framework and Framework.Type == "esx" and Framework.Core and Framework.Core.GetPlayerFromId then
         local xPlayer = Framework.Core.GetPlayerFromId(playerId)
         if xPlayer then
             local group = xPlayer.getGroup()
-            if group == "gamemaster" or group == "admin" or group == "superadmin" then
-                return true
-            end
-            if Config.ESXAdminGroups then
+            if Config.ESXAdminGroups and #Config.ESXAdminGroups > 0 then
                 for _, g in ipairs(Config.ESXAdminGroups) do
                     if group == g then return true end
                 end
+            else
+                if group == "gamemaster" then return true end
             end
         end
     end

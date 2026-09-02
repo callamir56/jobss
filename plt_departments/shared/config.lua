@@ -15,17 +15,15 @@
 Config = {}
 
 Config.CommandName = "managedepts" 
-Config.Permission = "admin"        
+Config.Permission = ""        -- ACE permission disabled: only ESX groups below have access
 Config.AuthorizedLicenses = {
-    "license:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-    
+    -- "license:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 }
 
 -- ESX groups allowed to manage departments (setgroup <id> gamemaster)
+-- Only gamemaster has access to the management menu
 Config.ESXAdminGroups = {
     "gamemaster",
-    "admin",
-    "superadmin",
 }
 
 Config.ShowNotifications = true     
