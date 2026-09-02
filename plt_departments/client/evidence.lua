@@ -179,6 +179,12 @@ AddEventHandler("plt_departments:client:openForensicPC", function()
     SendNUIMessage({ action = "openForensicPC" })
 end)
 
+-- Using the evidence_bag item opens the Forensic PC
+RegisterNetEvent("plt_departments:client:useEvidenceBag")
+AddEventHandler("plt_departments:client:useEvidenceBag", function()
+    TriggerEvent("plt_departments:client:openForensicPC")
+end)
+
 RegisterNUICallback("closeForensicPC", function(data, cb)
     SetNuiFocus(false, false)
     cb("ok")

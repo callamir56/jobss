@@ -843,6 +843,67 @@ AddEventHandler("plt_departments:s9", function(payload)
     end
 end)
 
+-- ------------------------------------------------------------
+-- s5: update door state (lock/unlock department doors)
+-- ------------------------------------------------------------
+RegisterNetEvent("plt_departments:s5")
+AddEventHandler("plt_departments:s5", function(doorKey, newState)
+    local playerId = source
+    if not doorKey then return end
+
+    local player = Framework.GetPlayer(playerId)
+    if not player then return end
+
+    -- only department members (or gamemaster) can toggle dept doors
+    local memberEntry = MemberData[player.citizenid]
+    local hasDept     = memberEntry and memberEntry.dept and memberEntry.dept ~= "none"
+    if not hasDept and not IsPlayerAuthorized(playerId) then return end
+
+    local state = (tonumber(newState) == 1) and 1 or 0
+    DoorStates[tostring(doorKey)] = state
+    SaveDoorStates()
+    TriggerClientEvent("plt_departments:client:SyncDoorState", -1, doorKey, state)
+end)
+
+-- ------------------------------------------------------------
+-- s8: move a member to another radio frequency (dispatch)
+-- ------------------------------------------------------------
+RegisterNetEvent("plt_departments:s8")
+AddEventHandler("plt_departments:s8", function(targetCid, toFrequency)
+    local playerId = source
+    if not targetCid then return end
+    local frequency = tonumber(toFrequency)
+    if not frequency then return end
+
+    -- only management/boss access can move units between frequencies
+    if not (IsPlayerAuthorized(playerId) or HasBossMenuAccess(playerId)) then return end
+
+    local target = Framework.GetPlayerByCitizenId(targetCid)
+    if not target then return end
+
+    -- remove the target from every channel, then add to the new one
+    for _, listeners in pairs(RadioChannels or {}) do
+        for i, entry in ipairs(listeners) do
+            if entry.cid == targetCid then
+                table.remove(listeners, i)
+                break
+            end
+        end
+    end
+
+    local key = tostring(frequency)
+    RadioChannels[key] = RadioChannels[key] or {}
+    local member    = MemberData and MemberData[targetCid]
+    local rankLabel = "Officer"
+    if member and PLTServerNodes and PLTServerNodes.GetMemberRankLabel then
+        rankLabel = PLTServerNodes.GetMemberRankLabel(member, DepartmentData, "Officer") or "Officer"
+    end
+    table.insert(RadioChannels[key], { cid = targetCid, name = target.name, rank = rankLabel })
+
+    TriggerClientEvent("plt_departments:client:SyncRadioChannels", -1, RadioChannels)
+    TriggerClientEvent("plt_departments:client:ForceRadioChannel", target.source, frequency)
+end)
+
 RegisterNetEvent("plt_departments:server:GetWeapon")
 AddEventHandler("plt_departments:server:GetWeapon", function(payload)
     local playerId = source

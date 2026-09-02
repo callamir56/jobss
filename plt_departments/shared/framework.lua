@@ -187,7 +187,8 @@ if IsDuplicityVersion() then
                     end,
                     RemoveMoney = function(type, amount, reason) 
                         local acc = type == "cash" and "money" or type
-                        if p.getAccount(acc).money >= amount then
+                        local account = p.getAccount(acc)
+                        if account and account.money >= amount then
                             p.removeAccountMoney(acc, amount)
                             return true
                         end
@@ -195,7 +196,8 @@ if IsDuplicityVersion() then
                     end,
                     GetMoney = function(type)
                         local acc = type == "cash" and "money" or type
-                        return p.getAccount(acc).money
+                        local account = p.getAccount(acc)
+                        return (account and account.money) or 0
                     end,
                     AddItem = function(item, amount, slot, info) p.addInventoryItem(item, amount); return true end,
                     RemoveItem = function(item, amount, slot) p.removeInventoryItem(item, amount); return true end,
