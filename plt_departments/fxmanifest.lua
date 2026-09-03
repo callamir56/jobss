@@ -41,7 +41,8 @@ client_scripts {
     'client/cameras.lua',
     'client/evidence.lua',
     'client/tracker.lua',
-    'client/comms.lua'
+    'client/comms.lua',
+    'client/boss_outfits.lua'
 }
 
 server_scripts {
@@ -56,7 +57,8 @@ server_scripts {
     'server/megaphone.lua',
     'server/evidence.lua',
     'server/tracker.lua',
-    'server/comms.lua'
+    'server/comms.lua',
+    'server/boss_outfits.lua'
 }
 
 ui_page 'web/index.html'

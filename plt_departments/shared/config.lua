@@ -1159,6 +1159,19 @@ Config.Translations = {
         ["confirm_placement"] = "Confirm",
         ["ped"] = "Ped",
         ["no_door_selected"] = "No location selected",
+
+        -- Rank outfits (boss menu)
+        ["tab_outfits"] = "OUTFITS",
+        ["rank_outfits_help"] = "Wear an outfit yourself, then save it to a rank here. Officers of that rank can equip it at the wardrobe. Saved automatically to the database.",
+        ["save_my_outfit_here"] = "SAVE MY OUTFIT",
+        ["outfit_delete"] = "DELETE",
+        ["outfit_configured"] = "SAVED",
+        ["outfit_not_set"] = "NO OUTFIT",
+        ["no_wardrobe_node"] = "WARNING: No wardrobe node linked to this department! Create one in the Department Manager.",
+        ["outfit_saved_for_rank"] = "Outfit saved for rank {rank}!",
+        ["outfit_deleted_for_rank"] = "Outfit deleted for rank {rank}.",
+        ["outfit_not_found_for_rank"] = "No outfit saved for this rank.",
+        ["outfit_need_rank_arg"] = "Usage: /setrankoutfit <rank level>",
     }
 }
 

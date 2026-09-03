@@ -403,6 +403,7 @@ window.renderSafariApp = function(page, subPage = 'dashboard', targetId = null) 
         { id: 'comms', label: window.T('tab_comms'), icon: 'comments' },
         { id: 'fines', label: window.T('tab_fines'), icon: 'file-invoice-dollar' },
         { id: 'shifts', label: window.T('tab_radars'), icon: 'tower-observation' },
+        { id: 'outfits', label: window.T('tab_outfits'), icon: 'shirt' },
         { id: 'logs', label: window.T('tab_logs'), icon: 'list-check' }
     ];
 
@@ -1149,6 +1150,8 @@ window.renderSafariApp = function(page, subPage = 'dashboard', targetId = null) 
                 </div>
             </div>
         `;
+    } else if (page === 'outfits') {
+        innerHTML = window.buildRankOutfitsPage();
     } else if (page === 'logs') {
         const logs = (window.syncedDutyLogs && window.syncedDutyLogs[window.currentJobName]) || [];
         const activeLogs = logs.slice().reverse(); // Newest first
@@ -1186,6 +1189,137 @@ window.renderSafariApp = function(page, subPage = 'dashboard', targetId = null) 
             </div>
         </div>
     `);
+};
+
+// ============================================================
+// Rank Outfits (Boss can save the outfit he is currently
+// wearing to any rank; stored in SQL via the wardrobe node)
+// ============================================================
+window.pltFindLinkedNode = function(startId, wantedType) {
+    const data = window.currentDeptData;
+    if (!data || !Array.isArray(data.nodes) || !Array.isArray(data.links)) return null;
+    const start = window.pltNormalizeNodeId(startId);
+    if (!start) return null;
+
+    const startNode = data.nodes.find(n => window.pltNormalizeNodeId(n.id) === start);
+    if (startNode && startNode.type === wantedType) return startNode;
+
+    const queue = [start];
+    const visited = {};
+    visited[start] = true;
+
+    while (queue.length > 0) {
+        const current = queue.shift();
+        for (const link of data.links) {
+            let target = null;
+            if (window.pltNormalizeNodeId(link.from) === current) target = window.pltNormalizeNodeId(link.to);
+            else if (window.pltNormalizeNodeId(link.to) === current) target = window.pltNormalizeNodeId(link.from);
+            if (!target || visited[target]) continue;
+            const node = data.nodes.find(n => window.pltNormalizeNodeId(n.id) === target);
+            if (!node) continue;
+            if (node.type === wantedType) return node;
+            visited[target] = true;
+            queue.push(target);
+        }
+    }
+    return null;
+};
+
+window.buildRankOutfitsPage = function() {
+    const data = window.currentDeptData;
+    if (!data || !Array.isArray(data.nodes)) {
+        return '<div class="mac-empty-state">' + window.T('no_rank_structure') + '</div>';
+    }
+
+    const deptId = window.pltResolveDepartmentForNode(window.currentJobName)
+        || window.pltNormalizeNodeId(window.currentJobName);
+
+    const rankNode = window.pltFindLinkedNode(deptId, 'rank');
+    const wardrobeNode = window.pltFindLinkedNode(deptId, 'wardrobe');
+
+    const ranks = (rankNode && Array.isArray(rankNode.ranks)) ? rankNode.ranks.slice() : [];
+    ranks.sort((a, b) => (Number(a.level) || 0) - (Number(b.level) || 0));
+
+    const wardrobeWarning = wardrobeNode
+        ? ''
+        : '<div class="mac-empty-state" style="color:#d93025; margin-bottom:12px;">' + window.T('no_wardrobe_node') + '</div>';
+
+    if (!ranks.length) {
+        return `
+            <div class="safari-page-container">
+                <div class="safari-standard-header">
+                    <h1>${window.T('tab_outfits')}</h1>
+                    <p>${window.T('rank_outfits_help')}</p>
+                </div>
+                ${wardrobeWarning}
+                <div class="mac-empty-state">${window.T('no_rank_structure')}</div>
+            </div>
+        `;
+    }
+
+    const outfits = (wardrobeNode && wardrobeNode.outfits) ? wardrobeNode.outfits : {};
+
+    const rows = ranks.map(r => {
+        const level = Number(r.level || r.grade || 0);
+        const label = r.label || ('RANK ' + level);
+        const key = 'rank_' + level;
+        const has = Array.isArray(outfits[key]) && outfits[key].length > 0;
+        return `
+            <tr>
+                <td class="bold">${label}</td>
+                <td><span class="badge ${has ? 'success' : 'warning'}">${has ? window.T('outfit_configured') : window.T('outfit_not_set')}</span></td>
+                <td style="text-align:right;">
+                    <button class="tracker-btn locate" style="margin-right:6px;" onclick="window.saveMyOutfitToRank(${level})">
+                        <i class="fas fa-shirt"></i> ${window.T('save_my_outfit_here')}
+                    </button>
+                    ${has ? '<button class="tracker-btn remove" onclick="window.deleteRankOutfitUI(' + level + ')"><i class="fas fa-trash-can"></i> ' + window.T('outfit_delete') + '</button>' : ''}
+                </td>
+            </tr>
+        `;
+    }).join('');
+
+    return `
+        <div class="safari-page-container">
+            <div class="safari-standard-header">
+                <h1>${window.T('tab_outfits')}</h1>
+                <p>${window.T('rank_outfits_help')}</p>
+            </div>
+            ${wardrobeWarning}
+            <table class="safari-table">
+                <thead>
+                    <tr><th>${window.T('rank')}</th><th>${window.T('status')}</th><th style="text-align:right;">${window.T('tab_outfits')}</th></tr>
+                </thead>
+                <tbody>
+                    ${rows}
+                </tbody>
+            </table>
+        </div>
+    `;
+};
+
+window.saveMyOutfitToRank = function(rankLevel) {
+    fetch(`https://${GetParentResourceName()}/saveMyOutfitToRank`, {
+        method: 'POST',
+        body: JSON.stringify({ rankLevel: rankLevel })
+    })
+    .then(res => res.json())
+    .catch(() => ({}))
+    .finally(() => {
+        // Give the server -> client sync (SyncJobs) a moment, then refresh the page
+        setTimeout(() => { if (window.renderSafariApp) window.renderSafariApp('outfits'); }, 800);
+    });
+};
+
+window.deleteRankOutfitUI = function(rankLevel) {
+    fetch(`https://${GetParentResourceName()}/deleteRankOutfit`, {
+        method: 'POST',
+        body: JSON.stringify({ rankLevel: rankLevel })
+    })
+    .then(res => res.json())
+    .catch(() => ({}))
+    .finally(() => {
+        setTimeout(() => { if (window.renderSafariApp) window.renderSafariApp('outfits'); }, 800);
+    });
 };
 
 // Global Clock Update (for Dock Icon and Clock App)

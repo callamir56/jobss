@@ -3220,6 +3220,7 @@
 
 .badge.danger { background: #fce8e6; color: #d93025; }
 .badge.warning { background: #fff7e0; color: #b05b00; }
+.badge.success { background: #e6f4ea; color: #137333; }
 
 .intra-empty {
     text-align: center;
