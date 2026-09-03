@@ -42,7 +42,8 @@ client_scripts {
     'client/evidence.lua',
     'client/tracker.lua',
     'client/comms.lua',
-    'client/boss_outfits.lua'
+    'client/boss_outfits.lua',
+    'client/k9_target.lua'
 }
 
 server_scripts {

@@ -1607,12 +1607,14 @@ AddEventHandler("plt_departments:client:SpawnK9", function(data)
     SetPedKeepTask(currentK9, true)
 
     TriggerEvent("plt_departments:client:StartK9Follow")
+    if PLTK9Target then PLTK9Target.Attach(currentK9) end
     Framework.Notify(T("dog_deployed"), "success")
 end)
 
 RegisterNetEvent("plt_departments:client:RemoveK9")
 AddEventHandler("plt_departments:client:RemoveK9", function()
     if currentK9 and type(currentK9) == "number" and DoesEntityExist(currentK9) then
+        if PLTK9Target then PLTK9Target.Detach(currentK9) end
         TriggerEvent("plt_departments:client:StopK9Follow")
         SafeDeleteEntity(currentK9)
         currentK9 = nil

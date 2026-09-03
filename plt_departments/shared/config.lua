@@ -1172,6 +1172,26 @@ Config.Translations = {
         ["outfit_deleted_for_rank"] = "Outfit deleted for rank {rank}.",
         ["outfit_not_found_for_rank"] = "No outfit saved for this rank.",
         ["outfit_need_rank_arg"] = "Usage: /setrankoutfit <rank level>",
+
+        -- K9 target menu (ALT on the dog)
+        ["k9_toggle_vehicle"] = "Enter / Exit Vehicle",
+        ["k9_attack"] = "Attack",
+        ["k9_sit"] = "Sit",
+        ["k9_track_nearest"] = "Track Nearest Person",
+        ["k9_open_menu"] = "Open K9 Menu",
+        ["k9_track_usage"] = "Usage: /k9track <player id>",
+        ["k9_tracking_player"] = "K9 is tracking player {id}...",
+        ["k9_target_not_found"] = "Player {id} is not nearby (not streamed)!",
+        ["k9_target_too_far"] = "That player is more than 100m away!",
+        ["k9_target_lost"] = "K9 lost the target.",
+        ["k9_arrived"] = "K9 reached the target!",
+        ["k9_no_target"] = "No target nearby!",
+        ["k9_attack_started"] = "K9 is attacking!",
+        ["k9_sat"] = "Dog sat down.",
+        ["k9_entering_vehicle"] = "Dog entering the vehicle.",
+        ["k9_exited_vehicle"] = "Dog left the vehicle.",
+        ["k9_no_vehicle"] = "No vehicle nearby!",
+        ["k9_no_free_seats"] = "No free seats in the vehicle!",
     }
 }
 

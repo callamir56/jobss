@@ -252,6 +252,9 @@ RegisterNUICallback("k9Action", function(data, cb)
         return
     end
 
+    -- any menu command cancels an active track-by-id task
+    if PLTK9CancelTracking then PLTK9CancelTracking() end
+
     if "follow" == action then
         StartFollowing()
         Framework.Notify("Dog is following.", "primary")
