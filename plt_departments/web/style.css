@@ -1656,7 +1656,7 @@ path.connection.temp {
 }
 
 /* CUSTOM FINE INPUT CSS */
-#fine-input-container, #seize-input-container, #import-modal-container {
+#fine-input-container, #seize-input-container, #import-modal-container, #k9-id-input-container {
     position: fixed;
     top: 0;
     left: 0;
@@ -1686,7 +1686,7 @@ path.connection.temp {
     overflow: hidden;
 }
 
-#fine-input-container.visible, #seize-input-container.visible, #import-modal-container.visible, #jail-input-container.visible {
+#fine-input-container.visible, #seize-input-container.visible, #import-modal-container.visible, #jail-input-container.visible, #k9-id-input-container.visible {
     display: flex !important;
 }
 

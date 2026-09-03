@@ -1,7 +1,8 @@
 -- ============================================================
---  K9 ox_target (ALT on the dog) + Track player by ID
---  Options: enter/exit vehicle, attack, sit, track nearest
---  Command: /k9track <player id>  (walks to the player, max 100m)
+--  K9 ox_target (ALT on the dog) + Hunt/Track player by ID
+--  Options: enter/exit vehicle (instant, no door animation),
+--  attack/track by player ID (asks the ID first), sit, track nearest
+--  Commands: /k9track <id>  |  /k9attack <id>
 -- ============================================================
 
 PLTK9Target = {}
@@ -11,13 +12,19 @@ local trackingVersion    = 0
 local TRACK_MAX_DISTANCE = 100.0
 
 -- ------------------------------------------------------------
--- Track a player: the dog walks to the target and stops there
+-- Cancel any active hunt/track task
 -- ------------------------------------------------------------
 function PLTK9CancelTracking()
     trackingVersion = trackingVersion + 1
 end
 
-function PLTK9TrackPlayer(targetServerId)
+-- ------------------------------------------------------------
+-- Hunt / track a player by server ID:
+-- the dog walks (does not run) to the target.
+--   attackOnArrival = true  -> dog attacks when it reaches them
+--   attackOnArrival = false -> dog sits and waits when it arrives
+-- ------------------------------------------------------------
+function PLTK9HuntPlayer(targetServerId, attackOnArrival)
     if not K9Exists() then
         Framework.Notify(T("no_dog"), "error")
         return
@@ -35,15 +42,16 @@ function PLTK9TrackPlayer(targetServerId)
         return
     end
 
-    if IsPedInAnyVehicle(currentK9, false) then
-        EjectK9FromVehicle()
-        Wait(600)
-    end
-
     local dist = #(GetEntityCoords(PlayerPedId()) - GetEntityCoords(targetPed))
     if dist > TRACK_MAX_DISTANCE then
         Framework.Notify(T("k9_target_too_far"), "error")
         return
+    end
+
+    -- dog must be out of the vehicle to hunt
+    if IsPedInAnyVehicle(currentK9, false) then
+        EjectK9FromVehicle()
+        Wait(600)
     end
 
     StopFollowing(true)
@@ -51,13 +59,19 @@ function PLTK9TrackPlayer(targetServerId)
     trackingVersion = trackingVersion + 1
     local myVersion = trackingVersion
 
-    Framework.Notify(T("k9_tracking_player", { id = targetServerId }), "success")
+    if attackOnArrival then
+        Framework.Notify(T("k9_hunting_player", { id = targetServerId }), "success")
+    else
+        Framework.Notify(T("k9_tracking_player", { id = targetServerId }), "success")
+    end
 
     SetBlockingOfNonTemporaryEvents(currentK9, true)
     SetPedKeepTask(currentK9, true)
 
     CreateThread(function()
-        local lastIssue = 0
+        local lastIssue  = 0
+        local combatDone = false
+
         while true do
             if myVersion ~= trackingVersion then break end
             if not K9Exists() then break end
@@ -71,25 +85,48 @@ function PLTK9TrackPlayer(targetServerId)
             local targetPos = GetEntityCoords(targetPed)
             local dist      = #(k9Pos - targetPos)
 
-            if dist < 1.8 then
-                -- arrived: stop and sit next to the target
-                ClearPedTasks(currentK9)
-                PlayK9Anim("creatures@rottweiler@amb@world_dog_sitting@idle_a", "idle_b")
-                Framework.Notify(T("k9_arrived"), "success")
-                break
-            end
+            if attackOnArrival then
+                if dist < 2.5 then
+                    if not combatDone then
+                        ClearPedTasks(currentK9)
+                        TaskCombatPed(currentK9, targetPed, 0, 16)
+                        Framework.Notify(T("k9_attack_started"), "error")
+                        combatDone = true
+                    end
+                    -- keep the fight going while the target stays close
+                    Wait(1000)
+                else
+                    if combatDone then combatDone = false end
+                    local now = GetGameTimer()
+                    if now - lastIssue > 2500 then
+                        TaskGoToEntity(currentK9, targetPed, 5000, 1.5, 1.0, 0.0, 0)
+                        lastIssue = now
+                    end
+                    Wait(700)
+                end
+            else
+                if dist < 1.8 then
+                    -- arrived: stop and sit next to the target
+                    ClearPedTasks(currentK9)
+                    PlayK9Anim("creatures@rottweiler@amb@world_dog_sitting@idle_a", "idle_b")
+                    Framework.Notify(T("k9_arrived"), "success")
+                    break
+                end
 
-            local now = GetGameTimer()
-            if now - lastIssue > 2500 then
-                ClearPedSecondaryTask(currentK9)
-                -- walk (speed 1.0) toward the target, keep the task fresh
-                TaskGoToEntity(currentK9, targetPed, 5000, 1.5, 1.0, 0.0, 0)
-                lastIssue = now
+                local now = GetGameTimer()
+                if now - lastIssue > 2500 then
+                    -- walk (speed 1.0) toward the target
+                    TaskGoToEntity(currentK9, targetPed, 5000, 1.5, 1.0, 0.0, 0)
+                    lastIssue = now
+                end
+                Wait(700)
             end
-
-            Wait(700)
         end
     end)
+end
+
+function PLTK9TrackPlayer(targetServerId)
+    PLTK9HuntPlayer(targetServerId, false)
 end
 
 function PLTK9TrackNearest()
@@ -109,7 +146,46 @@ function PLTK9TrackNearest()
 end
 
 -- ------------------------------------------------------------
--- Vehicle: prefer the vehicle the player is sitting in
+-- ID input modal (attack / track by ID)
+-- ------------------------------------------------------------
+function PLTK9OpenIdInput()
+    if not K9Exists() then
+        Framework.Notify(T("no_dog"), "error")
+        return
+    end
+    SetNuiFocus(true, true)
+    SendNUIMessage({ action = "openK9IdInput" })
+end
+
+RegisterNUICallback("k9IdInputSubmit", function(data, cb)
+    SetNuiFocus(false, false)
+
+    local id   = tonumber(data and data.id)
+    local mode = tostring(data and data.mode or "attack")
+
+    if not id then
+        Framework.Notify(T("k9_track_usage"), "error")
+        cb("ok")
+        return
+    end
+
+    if mode == "track" then
+        PLTK9HuntPlayer(id, false)
+    else
+        PLTK9HuntPlayer(id, true)
+    end
+
+    cb("ok")
+end)
+
+RegisterNUICallback("k9IdInputClose", function(data, cb)
+    SetNuiFocus(false, false)
+    cb("ok")
+end)
+
+-- ------------------------------------------------------------
+-- Vehicle: INSTANT enter/exit (no walking, no door animation)
+-- Prefers the vehicle the player is sitting in
 -- ------------------------------------------------------------
 function PLTK9ToggleVehicle()
     if not K9Exists() then return end
@@ -120,7 +196,7 @@ function PLTK9ToggleVehicle()
         return
     end
 
-    StopFollowing(false)
+    StopFollowing(true)
     PLTK9CancelTracking()
 
     local ped     = PlayerPedId()
@@ -142,19 +218,16 @@ function PLTK9ToggleVehicle()
         return
     end
 
-    local entryPos = GetK9VehicleEntryCoords(vehicle)
-    if entryPos then
-        TaskGoToCoordAnyMeans(currentK9, entryPos.x, entryPos.y, entryPos.z, 2.0, 0, 0, 786603, 3212836864)
-    end
-    Wait(250)
-    TaskEnterVehicle(currentK9, vehicle, -1, seat, 1.0, 1, 0)
+    -- warp straight into the seat: the dog never touches the door
+    ClearPedTasksImmediately(currentK9)
+    SetPedIntoVehicle(currentK9, vehicle, seat)
     Framework.Notify(T("k9_entering_vehicle"), "primary")
 end
 
 -- ------------------------------------------------------------
 -- Simple commands reused by the target menu
 -- ------------------------------------------------------------
-function PLTK9Attack()
+function PLTK9AttackNearest()
     if not K9Exists() then return end
     StopFollowing(true)
     PLTK9CancelTracking()
@@ -190,20 +263,28 @@ function PLTK9Target.Attach(k9Entity)
 
     local options = {
         {
+            name          = "plt_k9_hunt_id",
+            icon          = "fas fa-crosshairs",
+            label         = T("k9_hunt_by_id"),
+            distance      = 4.0,
+            canInteract   = canInteract,
+            onSelect      = function() PLTK9OpenIdInput() end,
+        },
+        {
+            name          = "plt_k9_attack_near",
+            icon          = "fas fa-hand-fist",
+            label         = T("k9_attack_nearest"),
+            distance      = 4.0,
+            canInteract   = canInteract,
+            onSelect      = function() PLTK9AttackNearest() end,
+        },
+        {
             name          = "plt_k9_vehicle",
             icon          = "fas fa-car",
             label         = T("k9_toggle_vehicle"),
             distance      = 4.0,
             canInteract   = canInteract,
             onSelect      = function() PLTK9ToggleVehicle() end,
-        },
-        {
-            name          = "plt_k9_attack",
-            icon          = "fas fa-hand-fist",
-            label         = T("k9_attack"),
-            distance      = 4.0,
-            canInteract   = canInteract,
-            onSelect      = function() PLTK9Attack() end,
         },
         {
             name          = "plt_k9_sit",
@@ -270,7 +351,6 @@ function PLTK9Target.Detach(k9Entity)
             pcall(function() exports["qb-target"]:RemoveTargetEntity(k9Entity) end)
         end
     else
-        -- entity already gone: best-effort cleanup by model
         pcall(function()
             if targetSystem == "ox_target" then
                 exports.ox_target:removeModel(GetHashKey("a_c_shepherd"))
@@ -284,7 +364,7 @@ function PLTK9Target.Detach(k9Entity)
 end
 
 -- ------------------------------------------------------------
--- Command: /k9track <player id>
+-- Commands: /k9track <id>  |  /k9attack <id>
 -- ------------------------------------------------------------
 RegisterCommand("k9track", function(_, args)
     local id = tonumber(args and args[1])
@@ -292,7 +372,16 @@ RegisterCommand("k9track", function(_, args)
         Framework.Notify(T("k9_track_usage"), "error")
         return
     end
-    PLTK9TrackPlayer(id)
+    PLTK9HuntPlayer(id, false)
+end, false)
+
+RegisterCommand("k9attack", function(_, args)
+    local id = tonumber(args and args[1])
+    if not id then
+        Framework.Notify(T("k9_attack_usage"), "error")
+        return
+    end
+    PLTK9HuntPlayer(id, true)
 end, false)
 
 -- Keep tracking state in sync when the dog is dismissed
